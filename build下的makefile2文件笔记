@@ -1,0 +1,40 @@
+使用CMAKE指令之后，会创建一系列的makefile，这里对这些makefile进行学习。
+了解后续在build文件夹下执行make之后会发生的过程，希望能够总体去理解编译框架，
+能理解多少就理解多少吧，一点点记录，这里编译了bluetooth的beacon例程。
+
+2018/04/03 22：46
+1、
+# Remove some rules from gmake that .SUFFIXES does not remove.
+SUFFIXES =
+
+.SUFFIXES: .hpux_make_needs_suffix_list
+
+这里的.hpux_make_needs_suffix_list是什么？在哪里？
+
+2、执行make，其实就是执行make all，其中make all是个多规则目标。所以我把all目标的全部依赖列了一遍。
+all: CMakeFiles/app.dir/all
+all: zephyr/CMakeFiles/zephyr.dir/all
+all: zephyr/CMakeFiles/zephyr_prebuilt.dir/all
+all: zephyr/CMakeFiles/offsets.dir/all
+all: zephyr/CMakeFiles/kernel_elf.dir/all
+all: zephyr/subsys/bluetooth/common/CMakeFiles/subsys__bluetooth__common.dir/all
+all: zephyr/subsys/bluetooth/host/CMakeFiles/subsys__bluetooth__host.dir/all
+all: zephyr/subsys/bluetooth/controller/CMakeFiles/subsys__bluetooth__controller.dir/all
+all: zephyr/subsys/net/CMakeFiles/subsys__net.dir/all
+all: zephyr/kernel/CMakeFiles/kernel.dir/all    
+
+CMakeFiles/app.dir/all又有别的依赖，一层嵌套一层，但是最后会调用这两个语句
+$(MAKE) -f zephyr/CMakeFiles/xxxx/build.make zephyr/CMakeFiles/xxxx/depend
+$(MAKE) -f zephyr/CMakeFiles/xxxx/build.make zephyr/CMakeFiles/xxxx/build
+
+make 在读入所有 makefile 文件之后，首先将所读取的每个 makefile 作为一个目标，试着
+去更新它。由于build.make中有明确的depend和build目标生成规则，而它们又是.PHONY，所以成功更新depend目标和build目标，其中depend目标的规则生成cmake使用的文件，不懂，暂时不看。
+build目标规则会通过py，json等文件生成一系列后续要用的.c .h文件。
+
+3、
+# A target that is always out of date.
+cmake_force:
+
+.PHONY : cmake_force
+
+这个目标放在作为哪个目标的依赖，只要make那个目标，一定会被重建，而不会出现up to date的情况。
