@@ -11,7 +11,8 @@ SUFFIXES =
 
 这里的.hpux_make_needs_suffix_list是什么？在哪里？
 
-2、执行make，其实就是执行make all，其中make all是个多规则目标。所以我把all目标的全部依赖列了一遍。
+2、
+执行make，其实就是执行make all，其中make all是个多规则目标。所以我把all目标的全部依赖列了一遍。
 all: CMakeFiles/app.dir/all
 all: zephyr/CMakeFiles/zephyr.dir/all
 all: zephyr/CMakeFiles/zephyr_prebuilt.dir/all
@@ -38,3 +39,14 @@ cmake_force:
 .PHONY : cmake_force
 
 这个目标放在作为哪个目标的依赖，只要make那个目标，一定会被重建，而不会出现up to date的情况。
+
+2018.04.05 00:27
+1、
+在使用交叉编译工具链arm-zephyr-eabi-gcc把.c编译成.o文件时候，会用到ccache命令，百度：ccache是一个编译缓存，通过缓存以前的汇编和检测时再次执行相同的编译以加快重新编译。
+2、
+build/CMakeFiles里面有许多xxx.dir文件夹，里面有menuconfig生成规则，用户app的.o生成规则，反正都是一些系统外的第三方工具的东西。
+build/zephyr/CMakiles里面有许多xxx.dir文件夹，里面有许多和zephyr系统相关的.o文件生成规则。
+3、
+cmake -E env [--unset=NAME]... [NAME=VALUE]... COMMAND [ARG]...
+这条指令让COMMAND能够在指令指定的环境中运行，但是这种环境只在第一次使用生效，网页上描述的几个操作都会导致环境变量刷新。不是很懂。
+https://stackoverflow.com/questions/690223/how-to-retrieve-a-user-environment-variable-in-cmake-windows
