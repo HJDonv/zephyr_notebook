@@ -10,7 +10,7 @@ SUFFIXES =
 .SUFFIXES: .hpux_make_needs_suffix_list
 
 这里的.hpux_make_needs_suffix_list是什么？在哪里？
-
+这样.SUFFIXES相当于不支持任何后缀了？
 2、
 执行make，其实就是执行make all，其中make all是个多规则目标。所以我把all目标的全部依赖列了一遍。
 all: CMakeFiles/app.dir/all
@@ -28,8 +28,7 @@ CMakeFiles/app.dir/all又有别的依赖，一层嵌套一层，但是最后会�
 $(MAKE) -f zephyr/CMakeFiles/xxxx/build.make zephyr/CMakeFiles/xxxx/depend
 $(MAKE) -f zephyr/CMakeFiles/xxxx/build.make zephyr/CMakeFiles/xxxx/build
 
-make 在读入所有 makefile 文件之后，首先将所读取的每个 makefile 作为一个目标，试着
-去更新它。由于build.make中有明确的depend和build目标生成规则，而它们又是.PHONY，所以成功更新depend目标和build目标，其中depend目标的规则生成cmake使用的文件，不懂，暂时不看。
+make 在读入所有 makefile 文件之后，首先将所读取的每个 makefile 作为一个目标，试着去更新它。由于build.make中有明确的depend和build目标生成规则，而它们又是.PHONY，所以成功更新depend目标和build目标，其中depend目标的规则生成cmake使用的文件，不懂，暂时不看。
 build目标规则会通过py，json等文件生成一系列后续要用的.c .h文件。
 
 3、
@@ -50,3 +49,36 @@ build/zephyr/CMakiles里面有许多xxx.dir文件夹，里面有许多和zephyr�
 cmake -E env [--unset=NAME]... [NAME=VALUE]... COMMAND [ARG]...
 这条指令让COMMAND能够在指令指定的环境中运行，但是这种环境只在第一次使用生效，网页上描述的几个操作都会导致环境变量刷新。不是很懂。
 https://stackoverflow.com/questions/690223/how-to-retrieve-a-user-environment-variable-in-cmake-windows
+
+2018.04.05 13:19
+1、
+all: zephyr/CMakeFiles/zephyr.dir/all的规则应该会生成一堆的.c.obj文件，但是最后结果是没有的，可能在后续哪个步骤删掉了。
+追加1：之前的认知是错误的，理解错误原因是makefile中的目标不等于文件，并没有删除的步骤，而是根本没有生成。
+2、
+使用script来记录终端信息，查看一下执行make的过程，找找看是在哪里删掉这些文件的。使用script进行log，会包含很多转义字符，看起来不方便，参考以下方法解决：
+https://stackoverflow.com/questions/6306728/remove-ansi-codes-when-storing-script-output
+
+2018.04.05 00:20
+1、
+make操作之后的log里面会有许多：
+Scanning dependencies of target xxxx
+Built target xxxx
+但是这两行都没在makefile中找到，可能是cmake内部打印的。
+
+2018.04.07 23:43
+1、
+这两天了解了CMAKE基本语法，并不是很难，makefile是根据zephyr团队写的CMAKE脚本自动生成的，所以打算先把makefile放一放，先学习CMAKE。（感觉makefile不用看，因为是根据CMAKE框架自动生成的）
+
+2、
+target链接库的时候，有两个命令：
+LINK_LIBRARIES() :这个命令要注意必须放在ADD_EXECUTABLE前面。
+TARGET_LINK_LIBRARIES()
+
+3、
+CMAKE学习路线参考了以下网址：https://www.kancloud.cn/itfanr/cmake-practice/82988
+
+4、
+对于*_SOURCE_DIR和*_BINARY_DIR这些变量的具体意义，参考以下链接：
+johnnado.com/cmake-directory-variables
+或者官方文档。可以使用MESSAGE指令打印出来感受一下。
+
