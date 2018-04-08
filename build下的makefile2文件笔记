@@ -82,3 +82,15 @@ CMAKE学习路线参考了以下网址：https://www.kancloud.cn/itfanr/cmake-pr
 johnnado.com/cmake-directory-variables
 或者官方文档。可以使用MESSAGE指令打印出来感受一下。
 
+2018.04.08 22:55
+1、
+CMAKE里面存在许多域（GLOBAL、DIRECTROY、TARGET...)，每个域有对应的对象。
+因为对象属于对应的域，所以对象有对应域的各种标准属性（PROPERTY），通过CMAKE的set_property和get_property命令
+可以对设置和获取这些属性值。其中GLOBAL域没有对象。
+在boilerplate.cmake文件中一开始便在GLOBAL中定义了许多PROPERTY，通过这个域可以模拟全局变量的作用，所以后面一定在某个地方使用到这些全局变量。
+
+2、
+extensions.cmake中定义了一些函数，看上去以后修改app最顶层的CMakeLists会用到。
+target_include_directories的具体用法参考：
+https://stackoverflow.com/questions/31969547/what-is-the-difference-between-include-directories-and-target-include-directorie
+https://stackoverflow.com/questions/26243169/cmake-target-include-directories-meaning-of-scope/26243547
