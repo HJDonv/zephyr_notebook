@@ -92,9 +92,11 @@ CMAKE里面存在许多域（GLOBAL、DIRECTROY、TARGET...)，每个域有对�
 2、
 extensions.cmake中定义了一些函数，看上去以后修改app最顶层的CMakeLists会用到。
 target_include_directories的具体用法参考：
-https://stackoverflow.com/questions/31969547/what-is-the-difference-between-include-directories-and-target-include-directorie
-https://stackoverflow.com/questions/26243169/cmake-target-include-directories-meaning-of-scope/26243547
+https://stackoverflow.com/questions/26243169/cmake-target-include-directories-meaning-of-scope
+target_link_libraries的具体用法参考：
 https://stackoverflow.com/questions/26037954/cmake-target-link-libraries-interface-dependencies
+结果上述两种的具体用法参考：
+https://stackoverflow.com/questions/31969547/what-is-the-difference-between-include-directories-and-target-include-directorie
 
 2018.04.10 23:04
 1、
@@ -106,3 +108,44 @@ CMAKE_CXX_FLAGS和COMPILE_DEFINITIONS区别，对某个target进行编译时候�
 https://stackoverflow.com/questions/39501481/difference-between-add-compile-options-and-setcmake-cxx-flags
 3、
 objcect libraries不能被直接“link”到target，但是可以通过Interface libraries间接link过去，不是很懂，先留着。
+
+2018.04.11 22:07
+1、
+使用静态库和直接使用源码的区别
+https://segmentfault.com/q/1010000002982186
+
+2018.04.12 21:56
+1、
+参考以下链接：
+http://www.cnblogs.com/coderfenghc/archive/2012/06/25/2562778.html
+CMD#13:cmake_policy  管理CMake的策略设置。
+随着CMake的演变，有时为了搞定bug或改善现有特色的实现方法，改变现有的行为是必须的。CMake的策略机制是在新的CMake版本带来行为上的改变时，用来帮助保持现有项目的构建的一种设计。
+每个新的策略（行为改变）被赋予一个"CMP<NNNN>"格式的识别符，其中"<NNNN>"是一个整数索引。每个策略相关的文档都会描述“旧行为”和“新行为”，以及引入该策略的原因。
+工程可以设置各种策略来选择期望的行为。当CMake需要了解要用哪种行为的时候，它会检查由工程指定的一种设置。如果没有可用的设置，工程假定使用“旧行为”，并且会给出警告要求你设置工程的策略。
+
+2、
+ccache.cmake的作用
+https://crascit.com/2016/04/09/using-ccache-with-cmake/
+
+3、
+variable的语法和用法
+https://stackoverflow.com/questions/31037882/whats-the-cmake-syntax-to-set-and-use-variables
+
+4、
+关于${${...}}引用语法
+macro(assert test comment)
+  if(NOT ${test})
+    message(STATUS "Assertion failed: ${${comment}}")
+    message(STATUS "comment is : ${comment}")
+  endif()
+endmacro()
+
+set(WARNNING_MESSAGE "ZEPHYR_TOOLCHAIN_VARIANT not set.")
+assert(ZEPHYR_TOOLCHAIN_VARIANT WARNNING_MESSAGE)
+
+上面这个例子，当美set test的时候，会打印出：
+-- Assertion failed: ZEPHYR_TOOLCHAIN_VARIANT not set.
+-- comment is : WARNNING_MESSAGE
+也就是说
+${comment} = WARNNING_MESSAGE
+${WARNING_MESSAGE} = "ZEPHYR_TOOLCHAIN_VARIANT not set."
