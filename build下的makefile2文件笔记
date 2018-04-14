@@ -149,3 +149,58 @@ assert(ZEPHYR_TOOLCHAIN_VARIANT WARNNING_MESSAGE)
 也就是说
 ${comment} = WARNNING_MESSAGE
 ${WARNING_MESSAGE} = "ZEPHYR_TOOLCHAIN_VARIANT not set."
+
+2018.04.14 00:25
+1、
+${ARGN}的作用：
+https://www.cnblogs.com/guolixiucai/p/4681171.html
+
+2、
+boilerplate.cmake的include(${ZEPHYR_BASE}/cmake/kconfig.cmake)应该生成并引用了
+build/zephyr/.config里面的变量（猜测，验证一下）
+
+ 
+2018.04.15 18：18
+
+1、
+总的来说，调用include(${ZEPHYR_BASE}/cmake/kconfig.cmake)做了几件事情：
+
+（1）将以下两个对象
+${KCONFIG_ROOT}           //即Kconfig文件，包含所有配置项
+${merge_fragments}        //即所有.conf结尾的配置文件，包含配置项的值
+作为参数传递给kconfig.py脚本生成
+${PROJECT_BINARY_DIR}/.config
+${PROJECT_BINARY_DIR}/include/generated/autoconf.h
+由于${merge_fragments}有很多文件，涉及到参数覆盖和优先级的问题，参考以下链接：
+参数覆盖：https://github.com/ulfalizer/Kconfiglib/blob/master/examples/merge_config.py
+优先级：http://docs.zephyrproject.org/application/application.html#application-configuration
+（2）制作几个自定义目标的运行环境（就像是制作了makefile中的为目标）：
+  gconfig
+  menuconfig
+  oldconfig
+  xconfig
+  在以后进行make menuconfig修改完.config之后，就会生成新的.config
+  参考
+  http://www.leoox.com/?p=291
+  https://blog.csdn.net/qqliyunpeng/article/details/50858075(autoconf.h如何生成的)
+
+2、
+总的来说，调用include(${ZEPHYR_BASE}/cmake/host-tools.cmake)做了几件事情：
+(1)调用include(${ZEPHYR_BASE}/cmake/host-tools-zephyr.cmake)
+   a.判断zephyr的SDK包是否是最新的
+   b.将SDK包中的TOOLCHAIN路径赋值给CMAKE_PREFIX_PATH
+(2)调用find_program在CMAKE_PREFIX_PATH路径中寻找执行程序，找到后将路径分别赋值给CACHE实体：
+DTC
+KCONFIG_CONF
+KCONFIG_MCONF
+OPENOCD
+
+3、
+cmake语法：
+1、区分变量名字、变量、变量的值
+https://cmake.org/Wiki/CMake/Language_Syntax的When CMake wants a variable name, when it wants a substitution章节
+
+4、
+环境变量
+https://stackoverflow.com/questions/21047399/cmake-set-environment-variables-from-a-script
+https://cmake.org/pipermail/cmake/2008-July/022655.html
