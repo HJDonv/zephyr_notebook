@@ -204,3 +204,58 @@ https://cmake.org/Wiki/CMake/Language_Syntax的When CMake wants a variable name,
 环境变量
 https://stackoverflow.com/questions/21047399/cmake-set-environment-variables-from-a-script
 https://cmake.org/pipermail/cmake/2008-July/022655.html
+
+
+2018.05.28 22:51
+1、
+CMAKE_CONFIGURE_DEPENDS这个property改变会导致所有CMakelist.txt重新执行一次。
+
+2018.05.29 20:18
+1、make menuconfig
+
+1）使用make menuconfig之后会执行build/CMakeFiles/menuconfig.dir/build.make
+cd /home/dong/zephyr/samples/bluetooth/beacon/build/zephyr/kconfig && 
+   /home/dong/cmake/cmake-3.8.2-Linux-x86_64/bin/cmake -E env 
+   srctree=/home/dong/zephyr 
+   KERNELVERSION=1.11.99 
+   KCONFIG_CONFIG=/home/dong/zephyr/samples/bluetooth/beacon/build/zephyr/.config 
+   ENV_VAR_ARCH=arm 
+   ENV_VAR_BOARD_DIR=/home/dong/zephyr/boards/arm/nrf52_pca10040 
+   /home/dong/sysroots/x86_64-pokysdk-linux/usr/bin/mconf /home/dong/zephyr/Kconfig
+先设置环境变量，然后执行mconff读取/home/dong/zephyr/Kconfig
+2）
+将刚刚赋值的环境变量传给Kconfig。
+config KERNELVERSION
+	string
+	option env="KERNELVERSION"
+
+config ENV_VAR_SYM_BOARD_DIR
+	string
+	option env="ENV_VAR_BOARD_DIR"
+
+config ENV_VAR_SYM_ARCH
+	string
+	option env="ENV_VAR_ARCH"
+
+
+2、
+https://cmake.org/pipermail/cmake/2006-July/010095.html
+https://cmake.org/pipermail/cmake/2015-October/061765.html
+偶然删掉.config文件之后，发现make和make menuconfig指令都会导致重新执行一次CMAKE，重新构建build。
+为什么呢？最后发现，是因为目标cmake_check_build_system，具体这个目标的实现不太清楚，只知道修改某些
+东西会引起重新执行CMAKE。
+在"~/zephyr/cmake/kconfig.cmake"有如下命令：
+
+# Force CMAKE configure when the configuration files changes.
+foreach(merge_config_input ${merge_config_files} ${DOTCONFIG})
+  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${merge_config_input})
+endforeach()
+
+在CMAKE官网查了下CMAKE_CONFIGURE_DEPENDS的描述如下：
+
+CMAKE_CONFIGURE_DEPENDS
+Tell CMake about additional input files to the configuration process. If any named file is modified the build system will re-run CMake to re-configure the file and generate the build system again.
+
+Specify files as a semicolon-separated list of paths. Relative paths are interpreted as relative to the current source directory.
+
+可能就是因为这个CACHE包含了.config，所以删掉.config会引起重新执行cmake。
