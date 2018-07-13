@@ -84,10 +84,10 @@ johnnado.com/cmake-directory-variables
 
 2018.04.08 22:55
 1、
-CMAKE里面存在许多域（GLOBAL、DIRECTROY、TARGET...)，每个域有对应的对象。
-因为对象属于对应的域，所以对象有对应域的各种标准属性（PROPERTY），通过CMAKE的set_property和get_property命令
-可以对设置和获取这些属性值。其中GLOBAL域没有对象。
-在boilerplate.cmake文件中一开始便在GLOBAL中定义了许多PROPERTY，通过这个域可以模拟全局变量的作用，所以后面一定在某个地方使用到这些全局变量。
+CMAKE里面存在许多类（GLOBAL、DIRECTROY、TARGET...)，每个类有对应的属性。
+因为对象属于对应的类，所以对象有对应类的各种标准属性（PROPERTY），通过CMAKE的set_property和get_property命令
+可以对设置和获取这些属性值。其中GLOBAL类没有对象。
+在boilerplate.cmake文件中一开始便在GLOBAL中定义了许多PROPERTY，通过这个类可以模拟全局变量的作用，所以后面一定在某个地方使用到这些全局变量。
 
 2、
 extensions.cmake中定义了一些函数，看上去以后修改app最顶层的CMakeLists会用到。
@@ -259,3 +259,51 @@ Tell CMake about additional input files to the configuration process. If any nam
 Specify files as a semicolon-separated list of paths. Relative paths are interpreted as relative to the current source directory.
 
 可能就是因为这个CACHE包含了.config，所以删掉.config会引起重新执行cmake。
+
+
+2018.06.02 补
+1、对于target_include_directories和target_link_libraries的新认识
+假设有如下程序：
+
+add_libraries(a a.c)
+target_include_directories(a PRIVATE patha_private)
+target_include_directories(a INTERFACE patha_interface)
+target_include_directories(a PUBLIC patha_public)
+
+add_executable(b b.c)
+target_link_libraries(b a)
+
+那么在编译目标a的时候，会把patha_private和patha_public路径加进include搜索范围
+而在编译目标b的时候，会把patha_interface和patha_public加进include搜索范围
+
+target_link_libraries(b PRIVATE/PUBLIC/INTERFACE a)的区别看官网例子
+
+刚好和target_include_directories是相反的，target_link_libraries用法如下：
+“Usage requirements are propagated by reading the INTERFACE_ variants of target properties from 
+dependencies and appending the values to the non-INTERFACE_ variants of the operand. 
+For example, the INTERFACE_INCLUDE_DIRECTORIES of dependencies is read and 
+appended to the INCLUDE_DIRECTORIES of the operand. ”
+
+2018.06.03 12：04
+1、动态加载和动态链接的区别
+http://goclis.github.io/posts/2014/05/21/difference-between-dynamic-link-and-dynamic-load.html
+
+2、imported target和interface target区别
+https://stackoverflow.com/questions/36648375/what-are-the-differences-betw
+
+3、再次学习.o .so .a文件，好像CMake的编译系统关键就是理解这些区别
+https://blog.csdn.net/chlele0105/article/details/23691147
+
+2018.06.06 23:02
+1、
+zephyr interface这个目标是在add_sub时候，在Zephyr根目录下CMakefile创建的
+2、
+
+
+2018.06.28 23：26
+1、
+应用角度去使用CMAKE，暂时不深究。
+
+2、
+想继续学习发现基础还是太弱，先系统学习GDB，发现一篇还不错的文章
+https://www-zeuthen.desy.de/unix/unixguide/infohtml/gdb/Connecting.html#Connecting
